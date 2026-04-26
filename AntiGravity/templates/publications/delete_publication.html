@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-8">
+    <h2 class="text-3xl font-bold text-red-600">Delete Publication</h2>
+    <p class="text-gray-500 mt-1">Confirm deletion of publication record</p>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-2xl">
+    <p class="text-lg text-gray-800 mb-6">Are you sure you want to delete the publication <strong>"{{ pub.title }}"</strong>?</p>
+    
+    <div class="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm">
+        <p>This action cannot be undone. This will permanently delete the publication from the database.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex items-center space-x-4">
+            <button type="submit" class="btn btn-error">Yes, Delete</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

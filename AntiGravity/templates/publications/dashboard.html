@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-8">
+    <h2 class="text-3xl font-bold text-gray-800">Dashboard</h2>
+    <p class="text-gray-500 mt-1">Overview of faculty publications</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center space-x-4">
+        <div class="p-3 bg-blue-100 text-blue-600 rounded-lg">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500 font-medium">Total Faculty</p>
+            <p class="text-2xl font-bold text-gray-800">{{ total_faculty }}</p>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center space-x-4">
+        <div class="p-3 bg-green-100 text-green-600 rounded-lg">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500 font-medium">Total Publications</p>
+            <p class="text-2xl font-bold text-gray-800">{{ total_pubs }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-100">
+    <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Title or Faculty..." class="input input-bordered w-full" />
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Faculty</label>
+            <select name="faculty" class="select select-bordered w-full">
+                <option value="">All Faculties</option>
+                {% for f in faculties %}
+                    <option value="{{ f.id }}" {% if request.GET.faculty == f.id|stringformat:"s" %}selected{% endif %}>{{ f.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <select name="pub_type" class="select select-bordered w-full">
+                <option value="">All Types</option>
+                {% for t, name in pub_types %}
+                    <option value="{{ t }}" {% if request.GET.pub_type == t %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+            <input type="number" name="year" value="{{ request.GET.year }}" placeholder="e.g. 2024" class="input input-bordered w-full" />
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary w-full">Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- Data Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="table w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th>Title</th>
+                    <th>Faculty</th>
+                    <th>Type</th>
+                    <th>Venue/Publisher</th>
+                    <th>Year</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pub in publications %}
+                <tr class="hover">
+                    <td class="font-medium text-gray-800 max-w-xs truncate" title="{{ pub.title }}">{{ pub.title }}</td>
+                    <td>
+                        <div class="font-semibold">{{ pub.faculty.name }}</div>
+                        <div class="text-xs text-gray-500">{{ pub.faculty.designation }}</div>
+                    </td>
+                    <td>
+                        <span class="badge badge-outline 
+                            {% if pub.pub_type == 'Journal' %}badge-primary
+                            {% elif pub.pub_type == 'Conference' %}badge-secondary
+                            {% elif pub.pub_type == 'Book' %}badge-accent
+                            {% else %}badge-info{% endif %}">
+                            {{ pub.pub_type }}
+                        </span>
+                    </td>
+                    <td class="max-w-xs truncate" title="{{ pub.venue_name }}">{{ pub.venue_name }}</td>
+                    <td>{{ pub.year }}</td>
+                    <td class="flex space-x-2">
+                        <a href="{% url 'edit_publication' pub.id %}" class="btn btn-sm btn-ghost text-blue-600">Edit</a>
+                        <a href="{% url 'delete_publication' pub.id %}" class="btn btn-sm btn-ghost text-red-600">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-8 text-gray-500">No publications found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
